@@ -1,5 +1,7 @@
 
 import java.awt.geom.Point2D;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,12 +46,22 @@ public class BuildGraph {
 		return edge;
 	}
 	
-	public BuildGraph setGraph(double r, int n, double b){
+	public boolean vertexFiile(String path) throws IOException{
+		FileWriter fw = new FileWriter(path);
+		for(int i=0; i<vertex.size();i++){
+			fw.write(this.vertex.get(i).getX()+","+this.vertex.get(i).getY());
+		}
+		fw.close();
+		return true;
+	}
+	
+	public BuildGraph setGraph(double r, int n, double b, String path) throws IOException{
 		this.setBounding(b);
 		this.setNumberofVertex(n);
 		this.setR(r);
 		this.DeployPoint();
 		this.setEdge();
+		this.vertexFiile(path);
 		return this;
 	}
 	

@@ -1,8 +1,11 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.awt.geom.Point2D;
 
 /**
  *
@@ -15,43 +18,58 @@ public class DemoGraph {
         int round = 100;
         int str=100; //number of nodes	
         int end=1000; //number of nodes
-    	double bound= 100.0;
-        
+    	double bound= 25.0;
+        double edge = 5.4*0.866;
+        String vertexfile;
         
         for(str=str; str<= end;str=str+100){
         	
         double AvgClique=0;
-    	for(int r=1;r<=round;r++){   		
-    	BuildGraph BG = new BuildGraph();
-    	BG.setGraph(2.7*2, str, bound);
-    	Graph graph = new Graph();
-    	
-    	for(int i = 0; i < BG.vertex.size(); i++){
-    		Vertex vertices = new Vertex("" + i);
-    		vertices.p= BG.vertex.get(i);
-    		//System.out.println(BG.vertex.get(i));
-            graph.addVertex(vertices, true, BG.vertex.get(i));
-        }
+    	for(int r=1;r<=round;r++){  
+    		
+    	vertexfile = "c:\\r=2\\region 25,25\\points\\"+str+"\\"+r+".txt";
+    		
     	/*
-    	for(int i = 0; i < BG.edge.size(); i++){
-               graph.addEdge(graph.getVertex(""+BG.edge.get(i)[0]), graph.getVertex(""+BG.edge.get(i)[1])); 
-        }
+    	//create graph data
+    	BuildGraph BG = new BuildGraph();
+    	BG.setGraph(edge, str, bound, vertexfile);	
     	*/
     	
-    	for(int i = 0; i < BG.vertex.size(); i++){
-    		for(int j = i+1; j < BG.vertex.size(); j++){
-        		if(graph.getVertex(""+i).p.distance(graph.getVertex(""+j).p)<=5.4){
+    	FileReader fr = new FileReader(vertexfile);
+		BufferedReader br = new BufferedReader(fr);
+		String s;
+		List<Point2D> pl = new ArrayList<>();
+    	while (br.ready()){
+			s = br.readLine();			
+			if(s.contains(",")==true){
+			String[] a = s.split(",");
+			Point2D p= new Point2D.Double(Double.parseDouble(a[0]),Double.parseDouble(a[1]));
+			pl.add(p);
+			}
+    	}
+    	
+    	Graph graph = new Graph();    	
+    	for(int i = 0; i < pl.size(); i++){
+    		Vertex vertices = new Vertex("" + i);
+    		vertices.p= pl.get(i);
+    		//System.out.println(pl.get(i));
+            graph.addVertex(vertices, true, pl.get(i));
+        }
+    	
+    	for(int i = 0; i < pl.size(); i++){
+    		for(int j = i+1; j < pl.size(); j++){
+        		if(graph.getVertex(""+i).p.distance(graph.getVertex(""+j).p)<=edge){
         			graph.addEdge(graph.getVertex(""+i),graph.getVertex(""+j));
         		}
         	}
     	}
     	
     	
-    	for(int i = 0; i < BG.vertex.size(); i++){
+    	for(int i = 0; i < pl.size(); i++){
             // System.out.println(vertices[i]);
              
              for(int j = 0; j < graph.getVertex(""+i).getNeighborCount(); j++){
-         //        System.out.println(vertices[i].getNeighbor(j));
+            //     System.out.println(vertices[i].getNeighbor(j));
              }             
         //     System.out.println();
          }
@@ -112,7 +130,13 @@ public class DemoGraph {
         	System.out.println(L.get(i).getLabel());
         }
       */  
-               
+
+    	partation p = new partation();
+    	List<clique> Clique_list = new ArrayList();
+    	Clique_list = p.cliquePartition(graph);
+    	
+    	
+    	/*//partation
         Graph graph_clone= new Graph();
         graph_clone = graph.clone();
         List<clique> CL = new ArrayList();
@@ -212,27 +236,28 @@ public class DemoGraph {
         //graph_clone.ShowGraph();      
         
         }
+        */ //partation
         
-        
-        for(int tt=0;tt<Clique_list.size();tt++){
+        /*  //check clique
+    	for(int tt=0;tt<Clique_list.size();tt++){
         	for(int k=0;k<Clique_list.get(tt).vertex.size();k++){
         		for(int kk=k+1;kk<Clique_list.get(tt).vertex.size();kk++){
         			if(graph.containsEdge(new Edge(Clique_list.get(tt).vertex.get(k),Clique_list.get(tt).vertex.get(kk)))!=true){
         			System.out.println("clique false"); 			
         			}
         			
-        			if(Clique_list.get(tt).vertex.get(k).p.distance(Clique_list.get(tt).vertex.get(kk).p)>2.7*2){
+        			if(Clique_list.get(tt).vertex.get(k).p.distance(Clique_list.get(tt).vertex.get(kk).p)>edge){
         				System.out.println("d false"); 
         			}
         			
-        			if(BG.vertex.get(Integer.valueOf(Clique_list.get(tt).vertex.get(k).getLabel())).distance(BG.vertex.get(Integer.valueOf(Clique_list.get(tt).vertex.get(kk).getLabel())))>5.4)
+        			if(BG.vertex.get(Integer.valueOf(Clique_list.get(tt).vertex.get(k).getLabel())).distance(BG.vertex.get(Integer.valueOf(Clique_list.get(tt).vertex.get(kk).getLabel())))>edge)
         			{
-        				//System.out.println("distance false"); 
+        				System.out.println("distance false"); 
         			}
         		}
         	}
         }
-        
+        *///check clique
         
         FileWriter fw = new FileWriter("c:\\"+str+"\\"+r+".txt");
         fw.write(Clique_list.size()+"\r\n");
@@ -241,9 +266,12 @@ public class DemoGraph {
         	for(int k=0;k<Clique_list.get(t).vertex.size();k++){
         	//System.out.println("Clique List "+t+" "+Clique_list.get(t).vertex.get(k));
         		
+        		graph.getVertex(Clique_list.get(t).vertex.get(k).getLabel()).p.getX();
+        		fw.write(Clique_list.get(t).vertex.get(k).p.getX()+","+Clique_list.get(t).vertex.get(k).p.getY());
+        		/*
         		fw.write(BG.vertex.get(Integer.valueOf(Clique_list.get(t).vertex.get(k).getLabel())).getX()+","+
         		BG.vertex.get(Integer.valueOf(Clique_list.get(t).vertex.get(k).getLabel())).getY()+"\r\n");
-        		
+        		*/
         		//fw.write(Clique_list.get(t).vertex.get(k).x+","+Clique_list.get(t).vertex.get(k).y+"\r\n");
         	}
         }
